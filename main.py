@@ -12,6 +12,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import textstat
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
+nltk.download('vader_lexicon')
 
 # Function to compute keyword analysis
 def keyword_analysis(resume_text, job_description_text, top_n=10):
