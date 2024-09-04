@@ -12,8 +12,16 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import textstat
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-import nltk
-nltk.download('vader_lexicon')
+
+from pymongo import MongoClient
+import base64
+
+
+# MongoDB connection
+client = MongoClient("mongodb+srv://ubaidkhanub5:#Besthacker234@cluster0.5nkhw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = client['beta-user-data']
+collection = db['CA']
+
 
 # Function to compute keyword analysis
 def keyword_analysis(resume_text, job_description_text, top_n=10):
@@ -351,10 +359,28 @@ if analyse_button:
     st.table(sentiment_df)
     st.markdown("<div style='height: 50px;'></div>", unsafe_allow_html=True) 
 
-
-
-
     # Plot sentiment meter using Plotly
     st.plotly_chart(plot_sentiment_meter(results["Sentiment Scores"]['compound']))
+
+
+
+    pdf_base64 = base64.b64encode(uploaded_file.read()).decode('utf-8')
+
+    keyword_analysis_dict = results["Keyword Analysis"].set_index('Keyword').to_dict(orient='index')
+    keyword_analysis_dict = {str(k): v for k, v in keyword_analysis_dict.items()}
+
+    document = {
+        "job_description": st.session_state.text_input,
+        "resume_text": resume_text,
+        "pdf_file": pdf_base64,
+        "metrics": {
+            "Keyword Analysis": keyword_analysis_dict,
+            "Sentence-BERT Similarity": float(results["Sentence-BERT Similarity"]),
+            "Sentiment Scores": results["Sentiment Scores"],
+            "Flesch-Kincaid Scores": fk_scores,
+            "Gunning-Fog Scores": gf_scores
+        }
+    }
+    collection.insert_one(document)
 
     st.markdown("---")
