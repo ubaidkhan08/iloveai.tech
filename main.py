@@ -298,14 +298,15 @@ if analyse_button:
     # Run the analysis
     results = compute_matching_score_with_keybert(resume_text, st.session_state.text_input)
     
-    # Display CV Fit Score (Sentence-BERT Similarity) using Plotly
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=results['Sentence-BERT Similarity'] * 100,
         gauge={'axis': {'range': [0, 100]},
-               'bar': {'color': "blue"}},
+            'bar': {'color': "blue"}},
         domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': "CV Fit Score"}))
+        title={'text': "CV Fit Score"},
+        number={'suffix': " / 100"}  # Adding '/ 100' suffix to the displayed number
+    ))
     st.plotly_chart(fig)
 
     # Add a gap between the two sections
@@ -358,7 +359,6 @@ if analyse_button:
 
 
 
-
     # Display sentiment scores in a table
     st.markdown("<h2 style='text-align: center;'>Sentiment Analysis of Resume</h2>", unsafe_allow_html=True)
     # Create the DataFrame and rename the Sentiment values
@@ -368,17 +368,60 @@ if analyse_button:
         "neg": "Negative",
         "neu": "Neutral",
         "pos": "Positive"
-        # "compound": "Compound"
     })
     # Convert the scores to percentage format
     sentiment_df["Score"] = (sentiment_df["Score"] * 100).map("{:.2f} %".format)
     # Display the table
     st.table(sentiment_df)
-    st.markdown("<div style='height: 50px;'></div>", unsafe_allow_html=True) 
+
+    # Interpretation Dialogue Box based on Scores
+    neutral_score = results["Sentiment Scores"]['neu'] * 100
+    positive_score = results["Sentiment Scores"]['pos'] * 100
+    negative_score = results["Sentiment Scores"]['neg'] * 100
+    compound_score = results["Sentiment Scores"]['compound']
+
+    # Exhaustive Scenarios
+    if compound_score > 0.9 and neutral_score > 60:
+        st.info("The Compound score is very high, indicating an overall positive sentiment. The high Neutral score suggests that while the text is largely factual or balanced, there are subtle positive elements influencing the overall sentiment.")
+
+    elif compound_score < -0.9 and neutral_score > 60:
+        st.info("The Compound score is very low, indicating an overall negative sentiment. The high Neutral score suggests that the text is mainly factual but includes strong negative sentiments that affect the overall sentiment.")
+
+    elif compound_score > 0.9 and positive_score > 60:
+        st.info("The Compound score is very high, indicating strong positive sentiment overall. The high Positive score confirms that the text contains significant positive sentiments.")
+
+    elif compound_score < -0.9 and negative_score > 60:
+        st.info("The Compound score is very low, indicating a strong negative sentiment overall. The high Negative score confirms that the text contains significant negative sentiments.")
+
+    elif compound_score > 0.9 and negative_score > 30:
+        st.info("The Compound score is very high, suggesting an overall positive sentiment. However, the high Negative score indicates that there are also notable negative aspects within the text, which might be counterbalanced by strong positive elements.")
+
+    elif compound_score < -0.9 and positive_score > 30:
+        st.info("The Compound score is very low, suggesting an overall negative sentiment. Despite the high Positive score, the presence of significant negative content dominates the sentiment.")
+
+    elif compound_score > 0.9 and neutral_score < 30 and positive_score > 60:
+        st.info("The Compound score is very high, indicating strong positive sentiment. The low Neutral score and high Positive score suggest that the text is highly positive with minimal neutral or factual content.")
+
+    elif compound_score < -0.9 and neutral_score < 30 and negative_score > 60:
+        st.info("The Compound score is very low, indicating strong negative sentiment. The low Neutral score and high Negative score suggest that the text is predominantly negative with minimal neutral or positive content.")
+
+    elif compound_score > 0.9 and neutral_score < 30 and negative_score < 30:
+        st.info("The Compound score is very high, indicating a strongly positive sentiment. The low Neutral and Negative scores confirm that the text is predominantly positive with minimal neutral or negative content.")
+
+    elif compound_score < -0.9 and neutral_score < 30 and positive_score < 30:
+        st.info("The Compound score is very low, indicating a strongly negative sentiment. The low Neutral and Positive scores confirm that the text is predominantly negative with minimal neutral or positive content.")
+
+    elif compound_score > 0.5 and positive_score > 30 and negative_score < 30:
+        st.info("The Compound score is high, indicating a generally positive sentiment. The high Positive score suggests that the text contains considerable positive sentiments, while the low Negative score indicates minimal negative content.")
+
+    elif compound_score < -0.5 and negative_score > 30 and positive_score < 30:
+        st.info("The Compound score is low, suggesting a generally negative sentiment. The high Negative score confirms significant negative content, while the low Positive score indicates minimal positive sentiments.")
+
+    else:
+        st.info("The sentiment appears to be mixed or balanced, with the Compound score indicating a neutral or varied overall sentiment. The individual scores may show a combination of positive, neutral, and negative aspects.")
 
     # Plot sentiment meter using Plotly
     st.plotly_chart(plot_sentiment_meter(results["Sentiment Scores"]['compound']))
-
 
 
     pdf_base64 = base64.b64encode(uploaded_file.read()).decode('utf-8')
