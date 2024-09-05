@@ -20,10 +20,24 @@ import nltk
 nltk.download('vader_lexicon')
 
 
-# MongoDB connection
-client = MongoClient("mongodb+srv://ubaidkhanub5:#Besthacker234@cluster0.5nkhw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-db = client['beta-user-data']
-collection = db['CA']
+# # MongoDB connection
+# client = MongoClient("mongodb+srv://ubaidkhanub5:#Besthacker234@cluster0.5nkhw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+# db = client['beta-user-data']
+# collection = db['CA']
+
+# Access secrets from the .streamlit/secrets.toml file
+mongo_host = st.secrets["mongo"]["host"]
+mongo_username = st.secrets["mongo"]["username"]
+mongo_password = st.secrets["mongo"]["password"]
+db_name = st.secrets["mongo"]["db_name"]
+collection_name = st.secrets["mongo"]["collection_name"]
+
+# MongoDB connection string using the credentials from the secrets file
+client = MongoClient(f"mongodb+srv://{mongo_username}:{mongo_password}@{mongo_host}/?retryWrites=true&w=majority")
+
+# Access the database and collection
+db = client[db_name]
+collection = db[collection_name]
 
 
 # Function to compute keyword analysis
