@@ -268,7 +268,7 @@ if 'pdf_uploaded' not in st.session_state:
 st.title("Resume Analyzer")
 
 # Text input
-text = st.text_input("Enter the Job Description:")
+text = st.text_input("Enter the Job Description (NOT JUST JOB ROLE BUT ENTIRE JD):")
 st.session_state.text_input = text
 
 # PDF upload
