@@ -19,12 +19,6 @@ import base64
 import nltk
 nltk.download('vader_lexicon')
 
-
-# # MongoDB connection
-# client = MongoClient("mongodb+srv://ubaidkhanub5:#Besthacker234@cluster0.5nkhw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-# db = client['beta-user-data']
-# collection = db['CA']
-
 # Access secrets from the .streamlit/secrets.toml file
 mongo_host = st.secrets["mongo"]["host"]
 mongo_username = st.secrets["mongo"]["username"]
